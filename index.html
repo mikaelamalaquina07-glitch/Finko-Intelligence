@@ -1,107 +1,109 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Finko Intelligence</title>
-<style>
-  :root {
-    --bg: #0F1720;
-    --panel: #141F2B;
-    --border: #23303D;
-    --text-primary: #E9EEF3;
-    --text-secondary: #93A4B4;
-    --accent: #4FD1A5;
-  }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-  }
+  <title>Finko Intelligence</title>
 
-  html, body {
-    height: 100%;
-  }
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  body {
-    background-color: var(--bg);
-    color: var(--text-primary);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-  }
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #faf9f6;
+      color: #1c1f1a;
+      padding: 60px;
+    }
 
-  main {
-    width: 100%;
-    max-width: 560px;
-    background-color: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 48px 40px;
-  }
+    h1 {
+      font-size: 48px;
+      margin-bottom: 10px;
+    }
 
-  .mark {
-    width: 40px;
-    height: 40px;
-    border-radius: 9px;
-    background: linear-gradient(135deg, var(--accent), #2E9E7C);
-    margin-bottom: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 18px;
-    color: #0F1720;
-  }
+    .subtitulo {
+      font-size: 20px;
+      margin-bottom: 40px;
+    }
 
-  h1 {
-    font-size: 28px;
-    font-weight: 600;
-    letter-spacing: -0.01em;
-    line-height: 1.3;
-    margin-bottom: 14px;
-  }
+    .propiedad {
+      margin-top: 20px;
+      padding: 20px;
+      border: 1px solid #dedad2;
+      border-radius: 10px;
+      max-width: 500px;
+      background: white;
+    }
 
-  p.subtitle {
-    font-size: 16px;
-    line-height: 1.6;
-    color: var(--text-secondary);
-    max-width: 46ch;
-  }
+    .estado {
+      color: #555;
+    }
 
-  hr {
-    border: none;
-    border-top: 1px solid var(--border);
-    margin: 32px 0;
-  }
-
-  p.status {
-    font-size: 14px;
-    color: var(--text-secondary);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background-color: var(--accent);
-    flex-shrink: 0;
-  }
-</style>
+    #mensaje {
+      margin-top: 20px;
+    }
+  </style>
 </head>
+
 <body>
-<main>
-  <div class="mark">Fi</div>
+
   <h1>Finko Intelligence</h1>
-  <p class="subtitle">Sistema inteligente para analizar el rendimiento de propiedades publicadas en Instagram.</p>
-  <hr>
-  <p class="status"><span class="dot"></span>Prueba inicial del frontend.</p>
-</main>
+
+  <p class="subtitulo">
+    Sistema inteligente para analizar el rendimiento de propiedades publicadas en Instagram.
+  </p>
+
+  <h2>Propiedades guardadas en Supabase</h2>
+
+  <div id="mensaje">Cargando...</div>
+
+  <div id="propiedades"></div>
+
+  <script>
+    const SUPABASE_URL = "NEXT_PUBLIC_SUPABASE_URL=https://ogjptusnafdejnvdozln.supabase.co
+";
+    const SUPABASE_KEY = "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_oyQyB4_awZjGZZkpwA-qHg_75GHfZfQ";
+
+    const clienteSupabase = supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
+
+    async function cargarPropiedades() {
+
+      const { data, error } = await clienteSupabase
+        .from("propiedades")
+        .select("*");
+
+      const mensaje = document.getElementById("mensaje");
+      const contenedor = document.getElementById("propiedades");
+
+      if (error) {
+        mensaje.textContent = "Error al cargar propiedades.";
+        console.error(error);
+        return;
+      }
+
+      mensaje.textContent = "";
+
+      data.forEach(propiedad => {
+
+        const tarjeta = document.createElement("div");
+
+        tarjeta.className = "propiedad";
+
+        tarjeta.innerHTML = `
+          <h3>${propiedad.nombre}</h3>
+          <p class="estado">Estado: ${propiedad.estado}</p>
+        `;
+
+        contenedor.appendChild(tarjeta);
+
+      });
+    }
+
+    cargarPropiedades();
+  </script>
+
 </body>
 </html>
