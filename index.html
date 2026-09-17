@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -38,11 +37,14 @@
       color: #555;
     }
 
+    .error {
+      color: #a12622;
+    }
+
     #mensaje {
       margin-top: 20px;
     }
   </style>
-
 </head>
 
 <body>
@@ -59,102 +61,48 @@
 
   <div id="propiedades"></div>
 
-
-  <script type="module">
-
-    import { createClient }
-    from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-
-
-    const SUPABASE_URL =
-      "https://acugsylkebfyxnunbacn.supabase.co";
-
-    const SUPABASE_KEY =
-      "sb_publishable__931Y3PHR3tN1YkHMSPZGQ_bgX4AE7s";
-
-
-    const clienteSupabase = createClient(
-      SUPABASE_URL,
-      SUPABASE_KEY
-    );
-
-
+  <script>
     async function cargarPropiedades() {
-
-      const mensaje =
-        document.getElementById("mensaje");
-
-      const contenedor =
-        document.getElementById("propiedades");
-
+      const mensaje = document.getElementById("mensaje");
+      const contenedor = document.getElementById("propiedades");
 
       try {
+        const respuesta = await fetch("/api/propiedades");
+        const resultado = await respuesta.json();
 
-        const { data, error } =
-          await clienteSupabase
-            .from("propiedades")
-            .select("id, nombre, estado")
-            .order("id", { ascending: true });
-
-
-        if (error) {
-          throw error;
+        if (!respuesta.ok) {
+          throw new Error(resultado.error || "No se pudieron cargar las propiedades.");
         }
 
-
-        mensaje.textContent = "";
-
-
-        if (data.length === 0) {
-
-          mensaje.textContent =
-            "No hay propiedades cargadas.";
-
+        if (resultado.data.length === 0) {
+          mensaje.textContent = "Todavía no hay propiedades guardadas.";
           return;
         }
 
+        mensaje.textContent = "";
+        resultado.data.forEach((propiedad) => {
+          const tarjeta = document.createElement("div");
+          tarjeta.className = "propiedad";
 
-        data.forEach(propiedad => {
+          const nombre = document.createElement("h3");
+          nombre.textContent = propiedad.nombre || "Propiedad sin nombre";
 
-          const tarjeta =
-            document.createElement("div");
+          const estado = document.createElement("p");
+          estado.className = "estado";
+          estado.textContent = `Estado: ${propiedad.estado || "Sin estado"}`;
 
-          tarjeta.className =
-            "propiedad";
-
-
-          tarjeta.innerHTML = `
-            <h3>${propiedad.nombre}</h3>
-            <p class="estado">
-              Estado: ${propiedad.estado}
-            </p>
-          `;
-
-
+          tarjeta.append(nombre, estado);
           contenedor.appendChild(tarjeta);
-
         });
-
-
       } catch (error) {
-
-        mensaje.textContent =
-          "Error al cargar propiedades.";
-
-        console.error(
-          "Error al conectar con Supabase:",
-          error
-        );
-
+        mensaje.className = "error";
+        mensaje.textContent = "No se pudieron cargar las propiedades. Revisa la configuración de Supabase.";
+        console.error("Error cargando propiedades:", error);
       }
-
     }
 
-
     cargarPropiedades();
-
   </script>
 
 </body>
-
 </html>

@@ -1,9 +1,3 @@
-# Archivos del sistema
-.DS_Store
-
-# Variables de entorno (claves privadas)
 .env
 .env.local
-
-# Dependencias (por si en el futuro usamos npm)
-node_modules/
+.vercel
