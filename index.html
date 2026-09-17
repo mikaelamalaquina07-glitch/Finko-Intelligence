@@ -6,8 +6,6 @@
 
   <title>Finko Intelligence</title>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -39,6 +37,10 @@
       color: #555;
     }
 
+    .error {
+      color: #a12622;
+    }
+
     #mensaje {
       margin-top: 20px;
     }
@@ -60,46 +62,43 @@
   <div id="propiedades"></div>
 
   <script>
-    const SUPABASE_URL = "NEXT_PUBLIC_SUPABASE_URL=https://ogjptusnafdejnvdozln.supabase.co
-";
-    const SUPABASE_KEY = "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_oyQyB4_awZjGZZkpwA-qHg_75GHfZfQ";
-
-    const clienteSupabase = supabase.createClient(
-      SUPABASE_URL,
-      SUPABASE_KEY
-    );
-
     async function cargarPropiedades() {
-
-      const { data, error } = await clienteSupabase
-        .from("propiedades")
-        .select("*");
-
       const mensaje = document.getElementById("mensaje");
       const contenedor = document.getElementById("propiedades");
 
-      if (error) {
-        mensaje.textContent = "Error al cargar propiedades.";
-        console.error(error);
-        return;
+      try {
+        const respuesta = await fetch("/api/propiedades");
+        const resultado = await respuesta.json();
+
+        if (!respuesta.ok) {
+          throw new Error(resultado.error || "No se pudieron cargar las propiedades.");
+        }
+
+        if (resultado.data.length === 0) {
+          mensaje.textContent = "Todavía no hay propiedades guardadas.";
+          return;
+        }
+
+        mensaje.textContent = "";
+        resultado.data.forEach((propiedad) => {
+          const tarjeta = document.createElement("div");
+          tarjeta.className = "propiedad";
+
+          const nombre = document.createElement("h3");
+          nombre.textContent = propiedad.nombre || "Propiedad sin nombre";
+
+          const estado = document.createElement("p");
+          estado.className = "estado";
+          estado.textContent = `Estado: ${propiedad.estado || "Sin estado"}`;
+
+          tarjeta.append(nombre, estado);
+          contenedor.appendChild(tarjeta);
+        });
+      } catch (error) {
+        mensaje.className = "error";
+        mensaje.textContent = "No se pudieron cargar las propiedades. Revisa la configuración de Supabase.";
+        console.error("Error cargando propiedades:", error);
       }
-
-      mensaje.textContent = "";
-
-      data.forEach(propiedad => {
-
-        const tarjeta = document.createElement("div");
-
-        tarjeta.className = "propiedad";
-
-        tarjeta.innerHTML = `
-          <h3>${propiedad.nombre}</h3>
-          <p class="estado">Estado: ${propiedad.estado}</p>
-        `;
-
-        contenedor.appendChild(tarjeta);
-
-      });
     }
 
     cargarPropiedades();
